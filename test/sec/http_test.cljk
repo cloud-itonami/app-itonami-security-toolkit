@@ -191,3 +191,25 @@
       (let [resp (http/send-request req {:provider p :host "example.com" :port 8080})]
         (is (= "ok-8080" (:body resp))
             "explicit non-80 :port must reach the provider unchanged")))))
+
+(deftest parse-request-malformed-input-characterization-test
+  ;; Characterization (probe-measured 2026-10-11): parse-request is lenient —
+  ;; malformed request lines yield observable nils (never corrupt values),
+  ;; header lines without a colon are silently skipped, LF-only endings parse,
+  ;; and render-request defaults a nil version to HTTP/1.1.
+  (let [r (http/parse-request "")]
+    (is (= "" (:method r)))
+    (is (nil? (:path r)))
+    (is (nil? (:version r)))
+    (is (= {} (:headers r)))
+    (is (= "" (:body r))))
+  (is (nil? (:path (http/parse-request "GARBAGE"))))
+  (is (nil? (:path (http/parse-request "GET\r\nHost: a\r\n\r\n"))))
+  (is (= {"host" "a.com"}
+         (:headers (http/parse-request "\r\nHost: a.com\r\n\r\n"))))
+  (is (= {"host" "a.com"}
+         (:headers (http/parse-request
+                    "GET / HTTP/1.1\r\nBadHeaderNoColon\r\nHost: a.com\r\n\r\n"))))
+  (is (= "GET" (:method (http/parse-request "GET / HTTP/1.1\nHost: a.com\n\n"))))
+  (is (= "  HTTP/1.1\r\n\r\n"
+         (http/render-request (http/parse-request "")))))
