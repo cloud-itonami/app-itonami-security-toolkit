@@ -8,7 +8,9 @@
   Supported slices (ADR-2609051100):
   - TCP connect scan (state classification open/closed/filtered)
   - host sweep (which of a subnet's hosts answer on given ports)
-  - service fingerprint by probe payload (HTTP banner grab etc.)
+  Service fingerprint is documented nowhere in ADR-2609051100 and has no
+  implementation in src — listed in earlier revisions only as an aspiration,
+  not a supported slice (same doc-vs-repo divergence family as issue #27).
   "
   (:require [sec.io :as io]))
 
