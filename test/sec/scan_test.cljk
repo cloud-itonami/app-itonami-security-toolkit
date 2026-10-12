@@ -95,7 +95,12 @@
   ;; NPE — same deny-by-default contract as the empty map (conformance 1)
   (is (thrown-with-msg? js/Error #"authority-free" (io/provider! nil)))
   (is (thrown-with-msg? js/Error #"provider" (scan/connect-scan {:hosts ["h"] :ports [1]} nil)))
-  (is (thrown-with-msg? js/Error #"provider" (scan/host-sweep {:hosts ["h"] :ports [1]} nil))))
+  (is (thrown-with-msg? js/Error #"provider" (scan/host-sweep {:hosts ["h"] :ports [1]} nil)))
+  ;; send-request is the third provider entry point: nil opts must deny too
+  ;; (conformance 1, same deny-by-default contract as connect-scan/host-sweep)
+  (is (thrown-with-msg? js/Error #"provider"
+                        (http/send-request
+                         {:method "GET" :path "/" :headers {} :body ""} nil))))
 
 ;; conformance 1: EVERY entry point must deny when no :provider is given
 ;; (seam enforcement is not just connect-scan's job).
