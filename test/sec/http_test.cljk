@@ -210,6 +210,9 @@
   (is (= {"host" "a.com"}
          (:headers (http/parse-request
                     "GET / HTTP/1.1\r\nBadHeaderNoColon\r\nHost: a.com\r\n\r\n"))))
-  (is (= "GET" (:method (http/parse-request "GET / HTTP/1.1\nHost: a.com\n\n"))))
+  (let [lf-request (http/parse-request "GET / HTTP/1.1\nHost: a.com\n\n")]
+    (is (= "GET" (:method lf-request)))
+    (is (= {"host" "a.com"} (:headers lf-request))
+        "bare LF must split request/header lines"))
   (is (= "  HTTP/1.1\r\n\r\n"
          (http/render-request (http/parse-request "")))))
